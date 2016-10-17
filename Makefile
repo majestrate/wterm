@@ -50,7 +50,7 @@ wterm: $(OBJECTS)
 	$(CC) -o wterm $(OBJECTS) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC)
+	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) include/config.h
 
 install: wterm
 	tic -s wterm.info
