@@ -20,7 +20,7 @@ SOURCES += $(wildcard $(WLDSRC)/nouveau/*.c)
 CFLAGS += -DWITH_NOUVEAU_DRM
 endif
 
-CFLAGS += -std=c99 -Wall -g
+CFLAGS += -std=c99 -Wall -g -DWITH_WAYLAND_DRM -DWITH_WAYLAND_SHM
 CFLAGS += $(shell pkg-config --cflags $(PKGS)) -I include
 LDFLAGS = $(shell pkg-config --libs $(PKGS)) -lm -lutil
 

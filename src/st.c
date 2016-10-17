@@ -3202,14 +3202,16 @@ wlinit(void)
 
 	registry = wl_display_get_registry(wl.dpy);
 	wl_registry_add_listener(registry, &reglistener, NULL);
-	wld.ctx = wld_wayland_create_context(wl.dpy, WLD_ANY);
-  if(!wld.ctx)
-    die("could not create wayland context");
-	wld.renderer = wld_create_renderer(wld.ctx);
-  if(!wld.renderer)
-    die("could not create wayland rendering context");
-	wl_display_roundtrip(wl.dpy);
+  
+  wl_display_dispatch(wl.dpy);
+  wl_display_roundtrip(wl.dpy);
 
+  wld.ctx = wld_wayland_create_context(wl.dpy, WLD_ANY);
+  if (!wld.ctx)
+    die("Can't create wayland context\n");
+  wld.renderer = wld_create_renderer(wld.ctx);
+  if (!wld.ctx)
+    die("Can't create renderer\n");
 	if (!wl.shm)
 		die("Display has no SHM\n");
 	if (!wl.seat)
@@ -3217,6 +3219,8 @@ wlinit(void)
 	if (!wl.datadevmanager)
 		die("Display has no data device manager\n");
 
+  wl_display_roundtrip(wl.dpy);
+  
 	wl.keyboard = wl_seat_get_keyboard(wl.seat);
 	wl_keyboard_add_listener(wl.keyboard, &kbdlistener, NULL);
 	wl.pointer = wl_seat_get_pointer(wl.seat);
