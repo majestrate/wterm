@@ -1,0 +1,13 @@
+prefix=@PREFIX@
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: wld
+Description: A primitive drawing library library targeted at Wayland
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lwld
+
+Requires: @WLD_REQUIRES@
+Requires.private: @WLD_REQUIRES_PRIVATE@
+

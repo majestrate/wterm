@@ -1,0 +1,11 @@
+*.o
+*.lo
+.*.sw*
+
+/.deps/
+/libwld.a
+/libwld.so*
+/wld.pc
+/protocol/wayland-drm-client-protocol.h
+/protocol/wayland-drm-protocol.c
+

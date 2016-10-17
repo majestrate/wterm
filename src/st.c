@@ -32,7 +32,7 @@
 #include <wchar.h>
 
 #include "arg.h"
-#include "xdg-shell-client-protocol.h"
+#include "xdg-shell.h"
 
 char *argv0;
 

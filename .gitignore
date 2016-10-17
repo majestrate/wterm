@@ -1,4 +1,5 @@
 *~
 *\#*
 *.o
+*-client-protocol.h
 wterm
