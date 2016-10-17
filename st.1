@@ -1,0 +1,158 @@
+.TH ST 1 st\-VERSION
+.SH NAME
+st \- simple terminal
+.SH SYNOPSIS
+.B st
+.RB [ \-a ]
+.RB [ \-c
+.IR class ]
+.RB [ \-f
+.IR font ]
+.RB [ \-g
+.IR geometry ]
+.RB [ \-i ]
+.RB [ \-o
+.IR file ]
+.RB [ \-t 
+.IR title ]
+.RB [ \-T
+.IR title ]
+.RB [ \-l
+.IR line ]
+.RB [ \-w 
+.IR windowid ]
+.RB [ \-v ]
+.RB [ \-e
+.IR command ...]
+.RI [ commands ...]
+.PP
+.B st
+.RB [ \-a ]
+.RB [ \-c
+.IR class ]
+.RB [ \-f
+.IR font ]
+.RB [ \-g
+.IR geometry ]
+.RB [ \-i ]
+.RB [ \-o
+.IR file ]
+.RB [ \-t
+.IR title ]
+.RB [ \-T
+.IR title ]
+.RB [ \-l
+.IR line ]
+.RB [ \-w
+.IR windowid ]
+.RB [ \-v ]
+.RB [ \-l
+.IR line ]
+.RI [ stty_args ...]
+.SH DESCRIPTION
+.B st
+is a simple terminal emulator.
+.SH OPTIONS
+.TP
+.B \-a
+disable alternate screens in terminal
+.TP
+.BI \-c " class"
+defines the window class (default $TERM).
+.TP
+.BI \-f " font"
+defines the
+.I font
+to use when st is run.
+.TP
+.BI \-g " geometry"
+defines the X11 geometry string.
+The form is [=][<cols>{xX}<rows>][{+-}<xoffset>{+-}<yoffset>]. See
+.BR XParseGeometry (3)
+for further details.
+.TP
+.B \-i
+will fixate the position given with the -g option.
+.TP
+.BI \-o " iofile"
+writes all the I/O to
+.I iofile.
+This feature is useful when recording st sessions. A value of "-" means
+standard output.
+.TP
+.BI \-t " title"
+defines the window title (default 'st').
+.TP
+.BI \-T " title"
+defines the window title (default 'st').
+.TP
+.BI \-w " windowid"
+embeds st within the window identified by 
+.I windowid
+.TP
+.BI \-l " line"
+use a tty line instead of a pseudo terminal.
+When this flag is used
+remaining arguments are used as flags for stty.
+.TP
+.B \-v
+prints version information to stderr, then exits.
+.TP
+.BI \-e " program " [ " arguments " "... ]"
+st executes
+.I program
+instead of the shell.  If this is used it
+.B must be the last option
+on the command line, as in xterm / rxvt.
+This option is only intended for compability,
+and all the remaining arguments are used as a command
+even without it.
+.SH SHORTCUTS
+.TP
+.B Ctrl-Print Screen
+Toggle if st should print to the
+.I iofile.
+.TP
+.B Shift-Print Screen
+Print the full screen to the
+.I iofile.
+.TP
+.B Print Screen
+Print the selection to the
+.I iofile.
+.TP
+.B Alt-Shift-Page Up
+Increase font size.
+.TP
+.B Alt-Shift-Page Down
+Decrease font size.
+.TP
+.B Alt-Shift-Home
+Reset to default font size.
+.TP
+.B Shift-Insert
+Paste from primary selection (middle mouse button).
+.TP
+.B Alt-Shift-Insert
+Paste from clipboard selection.
+.TP
+.B Alt-Shift-c
+Copy the selected text to the clipboard selection.
+.TP
+.B Alt-Shift-v
+Paste from the clipboard selection.
+.SH CUSTOMIZATION
+.B st
+can be customized by creating a custom config.h and (re)compiling the source
+code. This keeps it fast, secure and simple.
+.SH AUTHORS
+See the LICENSE file for the authors.
+.SH LICENSE
+See the LICENSE file for the terms of redistribution.
+.SH SEE ALSO
+.BR tabbed (1),
+.BR utmp (1),
+.BR stty (1)
+.SH BUGS
+See the TODO file in the distribution.
+
