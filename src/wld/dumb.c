@@ -21,9 +21,9 @@
  * SOFTWARE.
  */
 
-#include "drm-private.h"
-#include "drm.h"
-#include "pixman.h"
+#include "wld/drm-private.h"
+#include "wld/drm.h"
+#include "wld/pixman.h"
 
 #include <fcntl.h>
 #include <unistd.h>

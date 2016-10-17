@@ -23,10 +23,10 @@
 
 #define _GNU_SOURCE /* Required for mkostemp */
 
-#include "wayland.h"
-#include "wayland-private.h"
-#include "wld-private.h"
-#include "pixman.h"
+#include "wld/wayland.h"
+#include "wld/wayland-private.h"
+#include "wld/wld-private.h"
+#include "wld/pixman.h"
 
 #include <fcntl.h>
 #include <stdlib.h>

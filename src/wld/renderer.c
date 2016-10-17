@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include "wld-private.h"
+#include "wld/wld-private.h"
 
 void default_fill_region(struct wld_renderer * renderer, uint32_t color,
                          pixman_region32_t * region)

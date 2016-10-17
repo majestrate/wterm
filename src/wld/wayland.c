@@ -21,9 +21,9 @@
  * SOFTWARE.
  */
 
-#include "wayland.h"
-#include "wayland-private.h"
-#include "wld-private.h"
+#include "wld/wayland.h"
+#include "wld/wayland-private.h"
+#include "wld/wld-private.h"
 
 #include <stdlib.h>
 #include <wayland-client.h>

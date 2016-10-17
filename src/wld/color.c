@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#include "wld-private.h"
+#include "wld/wld-private.h"
 
 #include <strings.h>
 

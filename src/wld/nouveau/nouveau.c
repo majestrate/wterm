@@ -26,9 +26,9 @@
  * SOFTWARE.
  */
 
-#include "drm-private.h"
-#include "drm.h"
-#include "pixman.h"
+#include "wld/drm-private.h"
+#include "wld/drm.h"
+#include "wld/pixman.h"
 #include "nv_object.xml.h"
 #include "g80_2d.xml.h"
 #include "g80_defs.xml.h"
@@ -70,11 +70,11 @@ struct nouveau_buffer
     struct nouveau_bo * bo;
 };
 
-#include "interface/context.h"
-#include "interface/renderer.h"
-#include "interface/buffer.h"
+#include "../interface/context.h"
+#include "../interface/renderer.h"
+#include "../interface/buffer.h"
 #define DRM_DRIVER_NAME nouveau
-#include "interface/drm.h"
+#include "../interface/drm.h"
 IMPL(nouveau_context, wld_context)
 IMPL(nouveau_renderer, wld_renderer)
 IMPL(nouveau_buffer, wld_buffer)

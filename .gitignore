@@ -2,4 +2,6 @@
 *\#*
 *.o
 *-client-protocol.h
+.gdb_history
+*.log
 wterm

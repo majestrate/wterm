@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include "wld-private.h"
+#include "wld/wld-private.h"
 
 struct wld_surface * default_create_surface(struct wld_context * context,
                                             uint32_t width, uint32_t height,

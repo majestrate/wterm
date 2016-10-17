@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#include "drm.h"
-#include "drm-private.h"
+#include "wld/drm.h"
+#include "wld/drm-private.h"
 
 #include <sys/sysmacros.h>
 

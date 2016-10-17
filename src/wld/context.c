@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include "wld-private.h"
+#include "wld/wld-private.h"
 
 void context_initialize(struct wld_context * context,
                         const struct wld_context_impl * impl)

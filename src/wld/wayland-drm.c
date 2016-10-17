@@ -21,12 +21,12 @@
  * SOFTWARE.
  */
 
-#include "wayland.h"
-#include "drm.h"
+#include "wld/wayland.h"
+#include "wld/drm.h"
 #include "wayland-drm-client-protocol.h"
-#include "wayland-private.h"
-#include "wld-private.h"
-#include "drm-private.h"
+#include "wld/wayland-private.h"
+#include "wld/wld-private.h"
+#include "wld/drm-private.h"
 
 #include <stdlib.h>
 #include <string.h>

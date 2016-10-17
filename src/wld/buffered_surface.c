@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include "wld-private.h"
+#include "wld/wld-private.h"
 
 #include "interface/surface.h"
 IMPL(buffered_surface, wld_surface)

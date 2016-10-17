@@ -44,7 +44,6 @@ char *argv0;
  #include <libutil.h>
 #endif
 
-
 /* Arbitrary sizes */
 #define UTF_INVALID   0xFFFD
 #define UTF_SIZ       4
@@ -3203,8 +3202,12 @@ wlinit(void)
 
 	registry = wl_display_get_registry(wl.dpy);
 	wl_registry_add_listener(registry, &reglistener, NULL);
-	wld.ctx = wld_wayland_create_context(wl.dpy, WLD_SHM);
+	wld.ctx = wld_wayland_create_context(wl.dpy, WLD_ANY);
+  if(!wld.ctx)
+    die("could not create wayland context");
 	wld.renderer = wld_create_renderer(wld.ctx);
+  if(!wld.renderer)
+    die("could not create wayland rendering context");
 	wl_display_roundtrip(wl.dpy);
 
 	if (!wl.shm)

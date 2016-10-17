@@ -21,11 +21,11 @@
  * SOFTWARE.
  */
 
-#include "drm-private.h"
-#include "drm.h"
-#include "intel/batch.h"
-#include "intel/blt.h"
-#include "wld-private.h"
+#include "wld/drm-private.h"
+#include "wld/drm.h"
+#include "batch.h"
+#include "blt.h"
+#include "wld/wld-private.h"
 
 #include <unistd.h>
 #include <intel_bufmgr.h>
@@ -51,11 +51,11 @@ struct intel_buffer
     drm_intel_bo * bo;
 };
 
-#include "interface/context.h"
-#include "interface/renderer.h"
-#include "interface/buffer.h"
+#include "../interface/context.h"
+#include "../interface/renderer.h"
+#include "../interface/buffer.h"
 #define DRM_DRIVER_NAME intel
-#include "interface/drm.h"
+#include "../interface/drm.h"
 IMPL(intel_context, wld_context)
 IMPL(intel_renderer, wld_renderer)
 IMPL(intel_buffer, wld_buffer)

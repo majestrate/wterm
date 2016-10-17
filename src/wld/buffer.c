@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-#include "wld-private.h"
+#include "wld/wld-private.h"
 
 void buffer_initialize(struct buffer * buffer,
                        const struct wld_buffer_impl * impl,

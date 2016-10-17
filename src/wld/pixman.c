@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#include "pixman.h"
-#include "wld-private.h"
+#include "wld/pixman.h"
+#include "wld/wld-private.h"
 
 #define PIXMAN_COLOR(c) {                   \
     .alpha  = ((c >> 24) & 0xff) * 0x101,   \
