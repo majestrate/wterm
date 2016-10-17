@@ -70,7 +70,7 @@ static unsigned int cursorthickness = 2;
  */
 
 /* TERM value */
-static char termname[] = "st-256color";
+static char termname[] = "wterm-256color";
 
 static unsigned int tabspaces = 8;
 

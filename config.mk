@@ -5,3 +5,6 @@ ENABLE_INTEL = 1
 ENABLE_NOUVEAU = 1
 
 CFLAGS = -DVERSION=\"$(VERSION)\" -D_XOPEN_SOURCE=700
+
+# this can be changed to /usr/local
+PREFIX=$(HOME)

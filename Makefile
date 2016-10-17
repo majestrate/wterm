@@ -51,3 +51,8 @@ wterm: $(OBJECTS)
 
 clean:
 	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC)
+
+install: wterm
+	tic -s wterm.info
+	mkdir -p $(PREFIX)/bin/
+	cp wterm $(PREFIX)/bin/
