@@ -1,27 +1,28 @@
-wterm - xterm for wayland
---------------------
+# wterm - xterm for wayland
+
 
 wterm is an xterm replacement based on st, a simple terminal emulator for X
 originally made by suckless.
 
 
-Requirements
-------------
+![logo](contrib/logo/wterm.png "ebin logo")
 
-    fontconfig
-    wayland
-    xkbcommon
-    pixman
-    libdrm
+## Requirements
 
-Install
---------
+
+* fontconfig
+* wayland
+* xkbcommon
+* pixman
+* libdrm
+
+## Install
 
     make clean install
 
 See the man page for additional details.
 
-Credits
--------
+## Credits
+
 Based on Aurélien APTEL <aurelien dot aptel at gmail dot com> bt source code.
 
