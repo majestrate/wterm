@@ -16,9 +16,13 @@ originally made by suckless.
 * pixman
 * libdrm
 
-## Install
+## build
 
-    make clean install
+    make
+    
+## install
+
+    sudo make install
 
 See the man page for additional details.
 

@@ -2850,7 +2850,7 @@ tputc(Rune u)
 void
 tresize(int col, int row)
 {
-	int i;
+  int i;
 	int minrow = MIN(row, term.row);
 	int mincol = MIN(col, term.col);
 	int *bp;

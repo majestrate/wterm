@@ -32,6 +32,8 @@ SOURCES += $(WAYLAND_SRC)
 
 OBJECTS = $(SOURCES:.c=.o)
 
+BIN_PREFIX = $(PREFIX)
+SHARE_PREFIX = $(PREFIX)
 
 all: wterm
 
@@ -52,7 +54,24 @@ wterm: $(OBJECTS)
 clean:
 	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) include/config.h
 
-install: wterm
+install-icons:
+	mkdir -p $(SHARE_PREFIX)/share/icons/hicolor/scalable/apps/
+	cp contrib/logo/wterm.svg $(SHARE_PREFIX)/share/icons/hicolor/scalable/apps/wterm.svg
+	mkdir -p $(SHARE_PREFIX)/share/icons/hicolor/128x128/apps/
+	cp contrib/logo/wterm.png $(SHARE_PREFIX)/share/icons/hicolor/128x128/apps/wterm.png
+
+install-bin: wterm
 	tic -s wterm.info
-	mkdir -p $(PREFIX)/bin/
-	cp wterm $(PREFIX)/bin/
+	mkdir -p $(BIN_PREFIX)/bin/
+	cp wterm $(BIN_PREFIX)/bin/
+
+install: install-bin install-icons
+
+uninstall-icons:
+	rm -f $(SHARE_PREFIX)/share/icons/hicolor/128x128/apps/wterm.png
+	rm -f $(sHARE_PREFIX)/share/icons/hicolor/scalable/apps/wterm.svg
+
+uninstall-bin:
+	rm -f $(BIN_PREFIX)/bin/wterm
+
+uninstall: uninstall-bin uninstall-icons

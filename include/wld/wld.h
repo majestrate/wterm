@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <pixman.h>
 #include <fontconfig/fontconfig.h>
+#include <stdio.h>
 
 #define WLD_USER_ID (0xff << 24)
 

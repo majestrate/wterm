@@ -34,12 +34,8 @@
 #include FT_BITMAP_H
 
 #define ARRAY_LENGTH(array) (sizeof (array) / sizeof (array)[0])
-#if ENABLE_DEBUG
-#   define DEBUG(format, ...) \
-        fprintf(stderr, "# %s: " format, __func__, ## __VA_ARGS__)
-#else
-#   define DEBUG(format, ...)
-#endif
+
+#define DEBUG(...)  if(getenv("WTERM_DEBUG")) { fprintf(stderr, "%s:%d ", __FILE__, __LINE__); fprintf(stderr, __VA_ARGS__); }
 
 #define EXPORT __attribute__((visibility("default")))
 #define CONTAINER_OF(ptr, type, member) \
@@ -53,7 +49,8 @@
 
 struct wld_font_context
 {
-    FT_Library library;
+  FT_Library library;
+  FcConfig * config;
 };
 
 struct glyph
