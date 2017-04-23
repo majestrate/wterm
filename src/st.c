@@ -3026,6 +3026,7 @@ void
 wltermclear(int col1, int row1, int col2, int row2)
 {
 	uint32_t color = dc.col[IS_SET(MODE_REVERSE) ? defaultfg : defaultbg];
+  color = (color & term_alpha << 24) | (color & 0x00FFFFFF);
 	wld_fill_rectangle(wld.renderer, color, borderpx + col1 * wl.cw,
 			borderpx + row1 * wl.ch, (col2-col1+1) * wl.cw,
 			(row2-row1+1) * wl.ch);
@@ -3038,6 +3039,7 @@ void
 wlclear(int x1, int y1, int x2, int y2)
 {
 	uint32_t color = dc.col[IS_SET(MODE_REVERSE) ? defaultfg : defaultbg];
+  color = (color & term_alpha << 24) | (color & 0x00FFFFFF);
 	wld_fill_rectangle(wld.renderer, color, x1, y1, x2 - x1, y2 - y1);
 }
 
