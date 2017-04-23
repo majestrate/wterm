@@ -3808,6 +3808,7 @@ regglobal(void *data, struct wl_registry *registry, uint32_t name,
     wl.xdgshell = wl_registry_bind(registry, name,
                                     &xdg_shell_interface,1);
     xdg_shell_add_listener(wl.xdgshell, &shell_listener, NULL);
+    xdg_shell_use_unstable_version(wl.xdgshell, XDG_SHELL_VERSION_CURRENT);
   }
 }
 
