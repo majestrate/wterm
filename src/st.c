@@ -3618,8 +3618,10 @@ wldrawcursor(void)
 void
 wlsettitle(char *title)
 {
-	//xdg_surface_set_title(wl.xdgsurface, title);
-  zxdg_toplevel_v6_set_title(wl.xdgtoplevel, title);
+  if(wl.xdgsurface)
+    xdg_surface_set_title(wl.xdgsurface, title);
+  else
+    zxdg_toplevel_v6_set_title(wl.xdgtoplevel, title);
 }
 
 void
