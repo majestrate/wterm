@@ -2946,6 +2946,11 @@ wlresize(int col, int row)
 			WLD_FORMAT_ARGB8888, 0);
 	wld_export(wld.buffer, WLD_WAYLAND_OBJECT_BUFFER, &object);
 	wl.buffer = object.ptr;
+  if (wld.oldbuffer)
+  {
+    wld_buffer_unreference(wld.oldbuffer);
+    wld.oldbuffer = 0;
+  }
 }
 
 uchar
