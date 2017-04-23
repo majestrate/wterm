@@ -1,7 +1,7 @@
 # wterm - xterm for wayland
 
 
-wterm is an xterm replacement based on st, a simple terminal emulator for X
+wterm is an xterm replacement based on st a simple terminal emulator for X
 originally made by suckless.
 
 
@@ -19,7 +19,7 @@ originally made by suckless.
 ## build
 
     make
-    
+
 ## install
 
     sudo make install
@@ -28,5 +28,4 @@ See the man page for additional details.
 
 ## Credits
 
-Based on Aurélien APTEL <aurelien dot aptel at gmail dot com> bt source code.
-
+Based on Aurélien APTEL <aurelien dot aptel at gmail dot com> st source code.
