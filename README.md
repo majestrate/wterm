@@ -10,7 +10,7 @@ st is a simple terminal emulator for X originally made by suckless.
 
 ## Requirements
 
-
+* pkg-config
 * fontconfig
 * wayland
 * xkbcommon
