@@ -44,7 +44,7 @@ include/%-client-protocol.c: include/%.xml
 	wayland-scanner code < $? > $@
 
 include/%-client-protocol.h: include/%.xml
-	wayland-scanner client-header < $?  > $@
+	wayland-scanner client-header < $? > $@
 
 $(OBJECTS): $(HDRS) include/config.h
 
@@ -52,7 +52,7 @@ wterm: $(OBJECTS)
 	$(CC) -o wterm $(OBJECTS) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) include/config.h
+	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) include/config.h wterm
 
 install-icons:
 	mkdir -p $(SHARE_PREFIX)/share/icons/hicolor/scalable/apps/
