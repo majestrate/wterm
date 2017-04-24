@@ -17,6 +17,10 @@ st is a simple terminal emulator for X originally made by suckless.
 * pixman
 * libdrm
 
+On ubuntu it's
+
+    sudo apt install libdrm-dev libfontconfig1-dev libwayland-dev libxkbcommon-dev libpixman-1-dev pkg-config
+
 ## build
 
     make
@@ -24,8 +28,6 @@ st is a simple terminal emulator for X originally made by suckless.
 ## install
 
     sudo make install
-
-See the man page for additional details.
 
 ## Credits
 
