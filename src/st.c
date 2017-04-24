@@ -32,7 +32,7 @@
 #include <wchar.h>
 
 #include "arg.h"
-#include "xdg-shell-unstable-v5-client-protocol.h"
+#include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 
 char *argv0;
@@ -268,9 +268,11 @@ typedef struct {
 	struct wl_data_offer *seloffer;
 	struct wl_surface *surface;
 	struct wl_buffer *buffer;
-	struct zxdg_shell_v6 *shell;
+	struct zxdg_shell_v6 *xdgshell_v6;
   struct xdg_shell *xdgshell;
   struct xdg_surface *xdgsurface;
+  /* struct xdg_popup *xdgpopup;
+     struct wl_surface *popupsurface; */
 	struct zxdg_surface_v6 *xdgsurface_v6;
   struct zxdg_toplevel_v6 *xdgtoplevel;
 	XKB xkb;
@@ -485,6 +487,8 @@ static void regglobal(void *, struct wl_registry *, uint32_t, const char *,
 static void regglobalremove(void *, struct wl_registry *, uint32_t);
 static void surfenter(void *, struct wl_surface *, struct wl_output *);
 static void surfleave(void *, struct wl_surface *, struct wl_output *);
+/* static void popupsurfenter(void *, struct wl_surface *, struct wl_output *);
+static void popupsurfleave(void *, struct wl_surface *, struct wl_output *); */
 static void framedone(void *, struct wl_callback *, uint32_t);
 static void kbdkeymap(void *, struct wl_keyboard *, uint32_t, int32_t, uint32_t);
 static void kbdenter(void *, struct wl_keyboard *, uint32_t,
@@ -513,6 +517,7 @@ static void xdgsurfclose(void *, struct xdg_surface *);
 static void xdgtopconfigure(void *, struct zxdg_toplevel_v6 *, int32_t, int32_t, struct wl_array*);
 static void xdgtopclose(void *, struct zxdg_toplevel_v6 *);
 static void xdgshellping(void *,struct xdg_shell *, uint32_t);
+/* static void xdgpopupdone(void *, struct xdg_popup *); */
 static void datadevoffer(void *, struct wl_data_device *,
 		struct wl_data_offer *);
 static void datadeventer(void *, struct wl_data_device *, uint32_t,
@@ -554,6 +559,7 @@ static void usage(void);
 
 static struct wl_registry_listener reglistener = { regglobal, regglobalremove };
 static struct wl_surface_listener surflistener = { surfenter, surfleave };
+/* static struct wl_surface_listener popupsurflistener = { popupsurfenter, popupsurfleave }; */
 static struct wl_callback_listener framelistener = { framedone };
 static struct wl_keyboard_listener kbdlistener =
 	{ kbdkeymap, kbdenter, kbdleave, kbdkey, kbdmodifiers, kbdrepeatinfo };
@@ -564,10 +570,10 @@ static struct zxdg_surface_v6_listener surf_v6_listener =
 	{ xdgsurfv6configure };
 static struct xdg_shell_listener shell_listener = { xdgshellping };
 static struct xdg_surface_listener xdgsurflistener = { xdgsurfconfigure, xdgsurfclose};
-
 static struct zxdg_toplevel_v6_listener xdgtoplevellistener = {
   xdgtopconfigure, xdgtopclose
 };
+/* static struct xdg_popup_listener xdgpopuplistener = { xdgpopupdone }; */
 static struct wl_data_device_listener datadevlistener =
 	{ datadevoffer, datadeventer, datadevleave, datadevmotion, datadevdrop,
 	  datadevselection };
@@ -3266,18 +3272,23 @@ wlinit(void)
 
 	wl.surface = wl_compositor_create_surface(wl.cmp);
 	wl_surface_add_listener(wl.surface, &surflistener, NULL);
-  if(wl.shell)
+  if(wl.xdgshell_v6)
   {
-    wl.xdgsurface_v6 = zxdg_shell_v6_get_xdg_surface(wl.shell, wl.surface);
+    wl.xdgsurface_v6 = zxdg_shell_v6_get_xdg_surface(wl.xdgshell_v6, wl.surface);
     zxdg_surface_v6_add_listener(wl.xdgsurface_v6, &surf_v6_listener, NULL);
     wl.xdgtoplevel = zxdg_surface_v6_get_toplevel(wl.xdgsurface_v6);
     zxdg_toplevel_v6_add_listener(wl.xdgtoplevel, &xdgtoplevellistener, NULL);
   }
+  else if(wl.xdgshell)
+  {
+    xdg_shell_use_unstable_version(wl.xdgshell, XDG_SHELL_VERSION_CURRENT);
+    wl.xdgsurface = xdg_shell_get_xdg_surface(wl.xdgshell, wl.surface);
+    xdg_shell_add_listener(wl.xdgshell, &shell_listener, NULL);
+    xdg_surface_add_listener(wl.xdgsurface, &xdgsurflistener, NULL);
+  }
   else
   {
-    wl.xdgsurface = xdg_shell_get_xdg_surface(wl.xdgshell, wl.surface);
-    xdg_surface_add_listener(wl.xdgsurface, &xdgsurflistener, NULL);
-    xdg_surface_set_app_id(wl.xdgsurface, opt_class ? opt_class : termname);
+    /* die("could not initialize xdgshell"); */
   }
 
 	wl.xkb.ctx = xkb_context_new(0);
@@ -3620,7 +3631,7 @@ wlsettitle(char *title)
 {
   if(wl.xdgsurface)
     xdg_surface_set_title(wl.xdgsurface, title);
-  else
+  else if (wl.xdgtoplevel)
     zxdg_toplevel_v6_set_title(wl.xdgtoplevel, title);
 }
 
@@ -3786,13 +3797,16 @@ void
 regglobal(void *data, struct wl_registry *registry, uint32_t name,
           const char *interface, uint32_t version)
 {
+  if(getenv("WTERM_DEBUG"))
+    printf("interface %s\n", interface);
+
 	if (strcmp(interface, "wl_compositor") == 0) {
 		wl.cmp = wl_registry_bind(registry, name,
 				&wl_compositor_interface, 3);
 	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-		wl.shell = wl_registry_bind(registry, name,
+		wl.xdgshell_v6 = wl_registry_bind(registry, name,
 				&zxdg_shell_v6_interface, 1);
-		zxdg_shell_v6_add_listener(wl.shell, &shell_v6_listener, NULL);
+		zxdg_shell_v6_add_listener(wl.xdgshell_v6, &shell_v6_listener, NULL);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		wl.shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
@@ -3806,9 +3820,7 @@ regglobal(void *data, struct wl_registry *registry, uint32_t name,
 		wl_registry_bind(registry, name, &wl_output_interface, 2);
 	} else if (strcmp(interface, "xdg_shell") == 0) {
     wl.xdgshell = wl_registry_bind(registry, name,
-                                    &xdg_shell_interface,1);
-    xdg_shell_add_listener(wl.xdgshell, &shell_listener, NULL);
-    xdg_shell_use_unstable_version(wl.xdgshell, XDG_SHELL_VERSION_CURRENT);
+                                    &xdg_shell_interface, 1);
   }
 }
 
@@ -3830,6 +3842,16 @@ surfleave(void *data, struct wl_surface *surface, struct wl_output *output)
 {
 	if (--wl.vis == 0)
 		wl.state &= ~WIN_VISIBLE;
+}
+
+void
+popupsurfenter(void *data, struct wl_surface *surface, struct wl_output *output)
+{
+}
+
+void
+popupsurfleave(void *data, struct wl_surface *surface, struct wl_output *output)
+{
 }
 
 void
@@ -4155,12 +4177,21 @@ void
 xdgshellping(void * data, struct xdg_shell * shell, uint32_t serial)
 {
   xdg_shell_pong(shell, serial);
+  if(getenv("WTERM_DEBUG")) printf("serial=%d\n", serial);
 }
 
 void
 xdgsurfconfigure(void * data, struct xdg_surface *  surf, int32_t w, int32_t h, struct wl_array * states, uint32_t  serial)
 {
   xdg_surface_ack_configure(surf, serial);
+  xdg_surface_set_app_id(surf, opt_class ? opt_class : termname);
+  /*
+  wl.popupsurface = wl_compositor_create_surface(wl.cmp);
+  wl_surface_add_listener(wl.popupsurface, &popupsurflistener, NULL);
+
+  wl.xdgpopup = xdg_shell_get_xdg_popup(wl.xdgshell, wl.popupsurface, wl.surface, wl.seat, serial, 100, 100);
+  xdg_popup_add_listener(wl.xdgpopup, &xdgpopuplistener, NULL);
+*/
   wl.configured = true;
   if (wl.h == h && wl.w == w) return;
   cresize(w,h);
@@ -4173,7 +4204,6 @@ xdgtopconfigure(void * data, struct zxdg_toplevel_v6 * top, int32_t w, int32_t h
   zxdg_toplevel_v6_set_app_id(top, opt_class ? opt_class : termname);
 	wl.configured = true;
   if (wl.w == w && wl.h == h) return;
-
   cresize(w,h);
 }
 
@@ -4193,6 +4223,12 @@ void
 xdgsurfclose(void * data, struct xdg_surface * surf)
 {
   close_shell_and_exit();
+}
+
+void
+xdgpopupdone(void * data, struct xdg_popup * pop)
+{
+
 }
 
 void

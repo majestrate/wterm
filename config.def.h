@@ -5,7 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char font[] = "Ubuntu Mono:pixelsize=14:antialias=true:hinting=true:hintstyle=hintfull";
+static char font[] = "Monospace:pixelsize=14:antialias=true:hinting=true:hintstyle=hintfull";
 static int borderpx = 2;
 
 /*
@@ -397,4 +397,3 @@ static Key key[] = {
 static uint selmasks[] = {
 	[SEL_RECTANGULAR] = MOD_MASK_ALT,
 };
-
