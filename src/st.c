@@ -3999,7 +3999,7 @@ void
 kbdmodifiers(void *data, struct wl_keyboard *keyboard, uint32_t serial,
              uint32_t dep, uint32_t lat, uint32_t lck, uint32_t group)
 {
-  if(!wl.xkd.state) return;
+  if(!wl.xkb.state) return;
 	xkb_mod_mask_t mod_mask;
 	xkb_state_update_mask(wl.xkb.state, dep, lat, lck, group, 0, 0);
 
