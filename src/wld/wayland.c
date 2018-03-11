@@ -68,10 +68,11 @@ static const struct wl_callback_listener sync_listener = {
 static void buffer_release(void * data, struct wl_buffer * buffer);
 
 const static struct wayland_impl * impls[] = {
+/*
 #if WITH_WAYLAND_DRM
     [WLD_DRM] = &drm_wayland_impl,
 #endif
-
+*/
 #if WITH_WAYLAND_SHM
     [WLD_SHM] = &shm_wayland_impl,
 #endif
