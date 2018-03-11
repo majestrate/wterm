@@ -6,17 +6,21 @@ WLDSRC=$(SRC)/wld
 
 PKGS = fontconfig wayland-client wayland-cursor xkbcommon pixman-1 libdrm
 
-SOURCES = $(wildcard $(WLDSRC)/*.c)
-SOURCES += $(wildcard $(SRC)/*.c)
+WTERM_SOURCES = $(wildcard $(WLDSRC)/*.c)
+WTERM_SOURCES += $(wildcard $(SRC)/*.c)
+WTERM_HEADERS = $(wildcard $(WLDSRC)/*.h)
+WTERM_HEADERS += $(wildcard $(SRC)/*.h)
 
 ifeq ($(ENABLE_INTEL),1)
 PKGS += libdrm_intel
-SOURCES += $(wildcard $(WLDSRC)/intel/*.c)
+WTERM_SOURCES += $(wildcard $(WLDSRC)/intel/*.c)
+WTERM_HEADERS += $(wildcard $(WLDSRC)/intel/*.h)
 CFLAGS += -DWITH_INTEL_DRM
 endif
 ifeq ($(ENABLE_NOUVEAU),1)
 PKGS += libdrm_nouveau
-SOURCES += $(wildcard $(WLDSRC)/nouveau/*.c)
+WTERM_SOURCES += $(wildcard $(WLDSRC)/nouveau/*.c)
+WTERM_HEADERS += $(wildcard $(WLDSRC)/nouveau/*.h)
 CFLAGS += -DWITH_NOUVEAU_DRM
 endif
 
@@ -28,7 +32,7 @@ WAYLAND_HEADERS = $(wildcard include/*.xml)
 
 HDRS = $(WAYLAND_HEADERS:.xml=-client-protocol.h)
 WAYLAND_SRC = $(HDRS:.h=.c)
-SOURCES += $(WAYLAND_SRC)
+SOURCES = $(WTERM_SOURCES) $(WAYLAND_SRC)
 
 OBJECTS = $(SOURCES:.c=.o)
 
@@ -75,3 +79,6 @@ uninstall-bin:
 	rm -f $(BIN_PREFIX)/bin/wterm
 
 uninstall: uninstall-bin uninstall-icons
+
+format:
+	clang-format -i $(WTERM_SOURCES) $(WTERM_HEADERS)
