@@ -269,6 +269,8 @@ typedef struct {
 	struct wl_surface *surface;
 	struct wl_buffer *buffer;
 	struct zxdg_shell_v6 *xdgshell_v6;
+  struct wl_shell *shell;
+  struct wl_shell_surface *shellsurf;
   struct xdg_shell *xdgshell;
   struct xdg_surface *xdgsurface;
   struct wl_surface *popupsurface;
@@ -507,7 +509,12 @@ static void ptrbutton(void *, struct wl_pointer *, uint32_t, uint32_t,
 		uint32_t, uint32_t);
 static void ptraxis(void *, struct wl_pointer *, uint32_t, uint32_t,
 		wl_fixed_t);
-//static void xdgshellv6ping(void *, struct zxdg_shell_v6 *, uint32_t);
+
+static void shellsurfping(void *, struct wl_shell_surface *,uint32_t);
+static void shellsurfconfigure(void *, struct wl_shell_surface*, uint32_t, int32_t, int32_t);
+static void shellsurfpopupdone(void *, struct wl_shell_surface*);
+
+static void xdgshellv6ping(void *, struct zxdg_shell_v6 *, uint32_t);
 static void xdgsurfv6configure(void *, struct zxdg_surface_v6 *, uint32_t);
 static void xdgsurfconfigure(void *, struct xdg_surface *, int32_t, int32_t, struct wl_array*, uint32_t);
 static void xdgsurfclose(void *, struct xdg_surface *);
@@ -560,10 +567,11 @@ static struct wl_keyboard_listener kbdlistener =
 	{ kbdkeymap, kbdenter, kbdleave, kbdkey, kbdmodifiers, kbdrepeatinfo };
 static struct wl_pointer_listener ptrlistener =
 	{ ptrenter, ptrleave, ptrmotion, ptrbutton, ptraxis };
-// static struct zxdg_shell_v6_listener shell_v6_listener = { xdgshellv6ping };
+static struct zxdg_shell_v6_listener shell_v6_listener = { xdgshellv6ping };
 static struct zxdg_surface_v6_listener surf_v6_listener =
 	{ xdgsurfv6configure };
 static struct xdg_shell_listener shell_listener = { xdgshellping };
+static struct wl_shell_surface_listener shellsurf_listener = { shellsurfping, shellsurfconfigure, shellsurfpopupdone };
 static struct xdg_surface_listener xdgsurflistener = { xdgsurfconfigure, xdgsurfclose};
 static struct zxdg_toplevel_v6_listener xdgtoplevellistener = {
   xdgtopconfigure, xdgtopclose
@@ -1164,7 +1172,7 @@ die(const char *errstr, ...)
 	va_start(ap, errstr);
 	vfprintf(stdout, errstr, ap);
 	va_end(ap);
-	exit(1);
+  exit(1);
 }
 
 void
@@ -3241,9 +3249,12 @@ wlinit(void)
 	if (!wl.datadevmanager)
 		die("Display has no data device manager\n");
 
+  wl.xkb.ctx = xkb_context_new(0);
+  
   wl_display_roundtrip(wl.dpy);
-
 	wl.keyboard = wl_seat_get_keyboard(wl.seat);
+  if(!wl.keyboard)
+    die("Display has no keyboard\n");
 	wl_keyboard_add_listener(wl.keyboard, &kbdlistener, NULL);
 	wl.pointer = wl_seat_get_pointer(wl.seat);
 	wl_pointer_add_listener(wl.pointer, &ptrlistener, NULL);
@@ -3261,21 +3272,13 @@ wlinit(void)
 
 	wlloadcols();
 	wlloadcursor();
-
 	wl.vis = 0;
 	wl.h = 2 * borderpx + term.row * wl.ch;
 	wl.w = 2 * borderpx + term.col * wl.cw;
 
 	wl.surface = wl_compositor_create_surface(wl.cmp);
 	wl_surface_add_listener(wl.surface, &surflistener, NULL);
-  if(wl.xdgshell_v6)
-  {
-    wl.xdgsurface_v6 = zxdg_shell_v6_get_xdg_surface(wl.xdgshell_v6, wl.surface);
-    zxdg_surface_v6_add_listener(wl.xdgsurface_v6, &surf_v6_listener, NULL);
-    wl.xdgtoplevel = zxdg_surface_v6_get_toplevel(wl.xdgsurface_v6);
-    zxdg_toplevel_v6_add_listener(wl.xdgtoplevel, &xdgtoplevellistener, NULL);
-  }
-  else if(wl.xdgshell)
+  if(wl.xdgshell)
   {
     xdg_shell_use_unstable_version(wl.xdgshell, XDG_SHELL_VERSION_CURRENT);
     wl.xdgsurface = xdg_shell_get_xdg_surface(wl.xdgshell, wl.surface);
@@ -3287,12 +3290,16 @@ wlinit(void)
     else
       die("failed to get xdgsurface");
   }
-  else
+  else if(wl.xdgshell_v6)
   {
-    die("could not initialize xdgshell");
+    wl.xdgsurface_v6 = zxdg_shell_v6_get_xdg_surface(wl.xdgshell_v6, wl.surface);
+    zxdg_surface_v6_add_listener(wl.xdgsurface_v6, &surf_v6_listener, NULL);
+    wl.xdgtoplevel = zxdg_surface_v6_get_toplevel(wl.xdgsurface_v6);
+    zxdg_toplevel_v6_add_listener(wl.xdgtoplevel, &xdgtoplevellistener, NULL);
   }
-
-	wl.xkb.ctx = xkb_context_new(0);
+  else
+    die("no wayland shell");
+  wl_surface_commit(wl.surface);
 	wlresettitle();
 }
 
@@ -3634,6 +3641,8 @@ wlsettitle(char *title)
     xdg_surface_set_title(wl.xdgsurface, title);
   else if (wl.xdgtoplevel)
     zxdg_toplevel_v6_set_title(wl.xdgtoplevel, title);
+  else if(wl.shellsurf)
+    wl_shell_surface_set_title(wl.shellsurf, title);
 }
 
 void
@@ -3804,10 +3813,10 @@ regglobal(void *data, struct wl_registry *registry, uint32_t name,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		wl.cmp = wl_registry_bind(registry, name,
 				&wl_compositor_interface, 3);
-	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-    //printf("init zxdg_shell_v6\n");
-    //wl.xdgshell_v6 = wl_registry_bind(registry, name, &zxdg_shell_v6_interface, 1);
-    //zxdg_shell_v6_add_listener(wl.xdgshell_v6, &shell_v6_listener, NULL);
+  } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
+    // printf("init zxdg_shell_v6\n");
+    wl.xdgshell_v6 = wl_registry_bind(registry, name, &zxdg_shell_v6_interface, 1);
+    zxdg_shell_v6_add_listener(wl.xdgshell_v6, &shell_v6_listener, NULL);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		wl.shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
@@ -3872,13 +3881,11 @@ kbdkeymap(void *data, struct wl_keyboard *keyboard, uint32_t format, int32_t fd,
 		close(fd);
 		return;
 	}
-
-	wl.xkb.keymap = xkb_keymap_new_from_string(wl.xkb.ctx, string,
-			XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+  wl.xkb.keymap = xkb_keymap_new_from_string(wl.xkb.ctx, string, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
 	munmap(string, size);
 	close(fd);
 	wl.xkb.state = xkb_state_new(wl.xkb.keymap);
-
+  
 	wl.xkb.ctrl = xkb_keymap_mod_get_index(wl.xkb.keymap, XKB_MOD_NAME_CTRL);
 	wl.xkb.alt = xkb_keymap_mod_get_index(wl.xkb.keymap, XKB_MOD_NAME_ALT);
 	wl.xkb.shift = xkb_keymap_mod_get_index(wl.xkb.keymap, XKB_MOD_NAME_SHIFT);
@@ -3992,8 +3999,8 @@ void
 kbdmodifiers(void *data, struct wl_keyboard *keyboard, uint32_t serial,
              uint32_t dep, uint32_t lat, uint32_t lck, uint32_t group)
 {
+  if(!wl.xkd.state) return;
 	xkb_mod_mask_t mod_mask;
-
 	xkb_state_update_mask(wl.xkb.state, dep, lat, lck, group, 0, 0);
 
 	mod_mask = xkb_state_serialize_mods(wl.xkb.state, XKB_STATE_MODS_EFFECTIVE);
@@ -4152,18 +4159,33 @@ ptraxis(void * data, struct wl_pointer * pointer, uint32_t time, uint32_t axis,
 	}
 }
 
-/*
+void shellsurfping(void *user, struct wl_shell_surface * surface,uint32_t serial)
+{
+  wl_shell_surface_pong(surface, serial);
+  if(getenv("WTERM_DEBUG")) printf("shellsurf ping serial=%d\n",serial);
+}
+void shellsurfconfigure(void *user, struct wl_shell_surface* surface, uint32_t edges, int32_t w, int32_t h)
+{
+  if(getenv("WTERM_DEBUG")) printf("shell surface configured\n");
+}
+
+void shellsurfpopupdone(void *user, struct wl_shell_surface* surface)
+{
+}
+
+
 void
 xdgshellv6ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial)
 {
 	zxdg_shell_v6_pong(shell, serial);
 }
-*/
+
 
 void
 xdgsurfv6configure(void *data, struct zxdg_surface_v6 *surf, uint32_t serial)
 {
 	zxdg_surface_v6_ack_configure(surf, serial);
+
 }
 
 void
@@ -4300,8 +4322,10 @@ run(void)
 	/* Look for initial configure. */
 	wl_display_roundtrip(wl.dpy);
 	if (!wl.configured)
-		cresize(wl.w, wl.h);
-	draw();
+  {
+    cresize(wl.w, wl.h);  
+  }
+  draw();
 
 	clock_gettime(CLOCK_MONOTONIC, &last);
 	lastblink = last;
@@ -4327,8 +4351,10 @@ run(void)
 		}
 
 		if (FD_ISSET(wlfd, &rfd)) {
-			if (wl_display_dispatch(wl.dpy) == -1)
-				die("Connection error\n");
+      
+        if (wl_display_dispatch(wl.dpy) == -1)
+          die("Connection error\n");
+      
 		}
 
 		clock_gettime(CLOCK_MONOTONIC, &now);
