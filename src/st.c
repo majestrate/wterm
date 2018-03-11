@@ -32,7 +32,7 @@
 #include <wchar.h>
 
 #include "arg.h"
-#include "xdg-shell-client-protocol.h"
+#include "xdg-shell-unstable-v5-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 
 char *argv0;
@@ -271,8 +271,7 @@ typedef struct {
 	struct zxdg_shell_v6 *xdgshell_v6;
   struct xdg_shell *xdgshell;
   struct xdg_surface *xdgsurface;
-  /* struct xdg_popup *xdgpopup;
-     struct wl_surface *popupsurface; */
+  struct wl_surface *popupsurface;
 	struct zxdg_surface_v6 *xdgsurface_v6;
   struct zxdg_toplevel_v6 *xdgtoplevel;
 	XKB xkb;
@@ -487,8 +486,6 @@ static void regglobal(void *, struct wl_registry *, uint32_t, const char *,
 static void regglobalremove(void *, struct wl_registry *, uint32_t);
 static void surfenter(void *, struct wl_surface *, struct wl_output *);
 static void surfleave(void *, struct wl_surface *, struct wl_output *);
-/* static void popupsurfenter(void *, struct wl_surface *, struct wl_output *);
-static void popupsurfleave(void *, struct wl_surface *, struct wl_output *); */
 static void framedone(void *, struct wl_callback *, uint32_t);
 static void kbdkeymap(void *, struct wl_keyboard *, uint32_t, int32_t, uint32_t);
 static void kbdenter(void *, struct wl_keyboard *, uint32_t,
@@ -510,14 +507,13 @@ static void ptrbutton(void *, struct wl_pointer *, uint32_t, uint32_t,
 		uint32_t, uint32_t);
 static void ptraxis(void *, struct wl_pointer *, uint32_t, uint32_t,
 		wl_fixed_t);
-static void xdgshellv6ping(void *, struct zxdg_shell_v6 *, uint32_t);
+//static void xdgshellv6ping(void *, struct zxdg_shell_v6 *, uint32_t);
 static void xdgsurfv6configure(void *, struct zxdg_surface_v6 *, uint32_t);
 static void xdgsurfconfigure(void *, struct xdg_surface *, int32_t, int32_t, struct wl_array*, uint32_t);
 static void xdgsurfclose(void *, struct xdg_surface *);
 static void xdgtopconfigure(void *, struct zxdg_toplevel_v6 *, int32_t, int32_t, struct wl_array*);
 static void xdgtopclose(void *, struct zxdg_toplevel_v6 *);
 static void xdgshellping(void *,struct xdg_shell *, uint32_t);
-/* static void xdgpopupdone(void *, struct xdg_popup *); */
 static void datadevoffer(void *, struct wl_data_device *,
 		struct wl_data_offer *);
 static void datadeventer(void *, struct wl_data_device *, uint32_t,
@@ -559,13 +555,12 @@ static void usage(void);
 
 static struct wl_registry_listener reglistener = { regglobal, regglobalremove };
 static struct wl_surface_listener surflistener = { surfenter, surfleave };
-/* static struct wl_surface_listener popupsurflistener = { popupsurfenter, popupsurfleave }; */
 static struct wl_callback_listener framelistener = { framedone };
 static struct wl_keyboard_listener kbdlistener =
 	{ kbdkeymap, kbdenter, kbdleave, kbdkey, kbdmodifiers, kbdrepeatinfo };
 static struct wl_pointer_listener ptrlistener =
 	{ ptrenter, ptrleave, ptrmotion, ptrbutton, ptraxis };
-static struct zxdg_shell_v6_listener shell_v6_listener = { xdgshellv6ping };
+// static struct zxdg_shell_v6_listener shell_v6_listener = { xdgshellv6ping };
 static struct zxdg_surface_v6_listener surf_v6_listener =
 	{ xdgsurfv6configure };
 static struct xdg_shell_listener shell_listener = { xdgshellping };
@@ -573,7 +568,6 @@ static struct xdg_surface_listener xdgsurflistener = { xdgsurfconfigure, xdgsurf
 static struct zxdg_toplevel_v6_listener xdgtoplevellistener = {
   xdgtopconfigure, xdgtopclose
 };
-/* static struct xdg_popup_listener xdgpopuplistener = { xdgpopupdone }; */
 static struct wl_data_device_listener datadevlistener =
 	{ datadevoffer, datadeventer, datadevleave, datadevmotion, datadevdrop,
 	  datadevselection };
@@ -1168,7 +1162,7 @@ die(const char *errstr, ...)
 	va_list ap;
 
 	va_start(ap, errstr);
-	vfprintf(stderr, errstr, ap);
+	vfprintf(stdout, errstr, ap);
 	va_end(ap);
 	exit(1);
 }
@@ -2957,9 +2951,11 @@ wlresize(int col, int row)
 	wl.th = MAX(1, row * wl.ch);
 
 	wld.oldbuffer = wld.buffer;
-	wld.buffer = wld_create_buffer(wld.ctx, wl.w, wl.h,
-			WLD_FORMAT_ARGB8888, 0);
-	wld_export(wld.buffer, WLD_WAYLAND_OBJECT_BUFFER, &object);
+  wld.buffer = wld_create_buffer(wld.ctx, wl.w, wl.h, WLD_FORMAT_ARGB8888, 0);
+  
+  if(!wld.buffer)
+    die("failed to create buffer");
+  wld_export(wld.buffer, WLD_WAYLAND_OBJECT_BUFFER, &object);
 	wl.buffer = object.ptr;
   if (wld.oldbuffer)
   {
@@ -3283,12 +3279,17 @@ wlinit(void)
   {
     xdg_shell_use_unstable_version(wl.xdgshell, XDG_SHELL_VERSION_CURRENT);
     wl.xdgsurface = xdg_shell_get_xdg_surface(wl.xdgshell, wl.surface);
-    xdg_shell_add_listener(wl.xdgshell, &shell_listener, NULL);
-    xdg_surface_add_listener(wl.xdgsurface, &xdgsurflistener, NULL);
+    if(wl.xdgsurface)
+    {
+      xdg_shell_add_listener(wl.xdgshell, &shell_listener, NULL);
+      xdg_surface_add_listener(wl.xdgsurface, &xdgsurflistener, NULL);
+    }
+    else
+      die("failed to get xdgsurface");
   }
   else
   {
-    /* die("could not initialize xdgshell"); */
+    die("could not initialize xdgshell");
   }
 
 	wl.xkb.ctx = xkb_context_new(0);
@@ -3804,9 +3805,9 @@ regglobal(void *data, struct wl_registry *registry, uint32_t name,
 		wl.cmp = wl_registry_bind(registry, name,
 				&wl_compositor_interface, 3);
 	} else if (strcmp(interface, "zxdg_shell_v6") == 0) {
-		wl.xdgshell_v6 = wl_registry_bind(registry, name,
-				&zxdg_shell_v6_interface, 1);
-		zxdg_shell_v6_add_listener(wl.xdgshell_v6, &shell_v6_listener, NULL);
+    //printf("init zxdg_shell_v6\n");
+    //wl.xdgshell_v6 = wl_registry_bind(registry, name, &zxdg_shell_v6_interface, 1);
+    //zxdg_shell_v6_add_listener(wl.xdgshell_v6, &shell_v6_listener, NULL);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		wl.shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
 	} else if (strcmp(interface, "wl_seat") == 0) {
@@ -3842,16 +3843,6 @@ surfleave(void *data, struct wl_surface *surface, struct wl_output *output)
 {
 	if (--wl.vis == 0)
 		wl.state &= ~WIN_VISIBLE;
-}
-
-void
-popupsurfenter(void *data, struct wl_surface *surface, struct wl_output *output)
-{
-}
-
-void
-popupsurfleave(void *data, struct wl_surface *surface, struct wl_output *output)
-{
 }
 
 void
@@ -4161,11 +4152,13 @@ ptraxis(void * data, struct wl_pointer * pointer, uint32_t time, uint32_t axis,
 	}
 }
 
+/*
 void
 xdgshellv6ping(void *data, struct zxdg_shell_v6 *shell, uint32_t serial)
 {
 	zxdg_shell_v6_pong(shell, serial);
 }
+*/
 
 void
 xdgsurfv6configure(void *data, struct zxdg_surface_v6 *surf, uint32_t serial)
@@ -4185,13 +4178,6 @@ xdgsurfconfigure(void * data, struct xdg_surface *  surf, int32_t w, int32_t h, 
 {
   xdg_surface_ack_configure(surf, serial);
   xdg_surface_set_app_id(surf, opt_class ? opt_class : termname);
-  /*
-  wl.popupsurface = wl_compositor_create_surface(wl.cmp);
-  wl_surface_add_listener(wl.popupsurface, &popupsurflistener, NULL);
-
-  wl.xdgpopup = xdg_shell_get_xdg_popup(wl.xdgshell, wl.popupsurface, wl.surface, wl.seat, serial, 100, 100);
-  xdg_popup_add_listener(wl.xdgpopup, &xdgpopuplistener, NULL);
-*/
   wl.configured = true;
   if (wl.h == h && wl.w == w) return;
   cresize(w,h);
@@ -4223,12 +4209,6 @@ void
 xdgsurfclose(void * data, struct xdg_surface * surf)
 {
   close_shell_and_exit();
-}
-
-void
-xdgpopupdone(void * data, struct xdg_popup * pop)
-{
-
 }
 
 void
