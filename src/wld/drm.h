@@ -1,4 +1,4 @@
-/* wld: intel/mi.h
+/* wld: drm.h
  *
  * Copyright (c) 2013, 2014 Michael Forney
  *
@@ -21,30 +21,32 @@
  * SOFTWARE.
  */
 
-#ifndef WLD_INTEL_MI_H
-#define WLD_INTEL_MI_H
+#ifndef WLD_DRM_H
+#define WLD_DRM_H
 
-#define INTEL_CLIENT_MI 0x0
+#include <stdbool.h>
+#include <stdint.h>
 
-#define MI_OP(opcode) (                                                     \
-      INTEL_CLIENT_MI << 29 /* 31:29 */                                     \
-    | opcode << 23          /* 28:23 */                                     \
-)
+#define WLD_DRM_ID (0x02 << 24)
 
-#define MI_NOOP                 MI_OP(0x00)
-#define MI_FLUSH                MI_OP(0x04)
-#define MI_BATCH_BUFFER_END     MI_OP(0x0A)
+enum wld_drm_object_type
+{
+    WLD_DRM_OBJECT_HANDLE = WLD_DRM_ID,
+    WLD_DRM_OBJECT_PRIME_FD,
+};
 
-/* MI_NOOP */
-#define MI_NOOP_IDENTIFICATION_NUMBER(number)       (1 << 22 | number)
+enum wld_drm_flags
+{
+    WLD_DRM_FLAG_SCANOUT    = 0x1,
+    WLD_DRM_FLAG_TILED      = 0x2
+};
 
-/* MI_FLUSH */
-#define MI_FLUSH_ENABLE_PROTECTED_MEMORY            (1 << 6)
-#define MI_FLUSH_DISABLE_INDIRECT_STATE_POINTERS    (1 << 5)
-#define MI_FLUSH_CLEAR_GENERIC_MEDIA_STATE          (1 << 4)
-#define MI_FLUSH_RESET_GLOBAL_SNAPSHOT_COUNT        (1 << 3)
-#define MI_FLUSH_INHIBIT_RENDER_CACHE_FLUSH         (1 << 2)
-#define MI_FLUSH_INVALIDATE_STATE_INSTRUCTION_CACHE (1 << 1)
+/**
+ * Create a new WLD context from an opened DRM device file descriptor.
+ */
+struct wld_context * wld_drm_create_context(int fd);
+
+bool wld_drm_is_dumb(struct wld_context * context);
 
 #endif
 

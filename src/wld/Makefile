@@ -2,10 +2,10 @@
 
 include config.mk
 
-#PREFIX          ?= /usr/local
-#LIBDIR          ?= $(PREFIX)/lib
-#INCLUDEDIR      ?= $(PREFIX)/include
-#PKGCONFIGDIR    ?= $(LIBDIR)/pkgconfig
+PREFIX          ?= /usr/local
+LIBDIR          ?= $(PREFIX)/lib
+INCLUDEDIR      ?= $(PREFIX)/include
+PKGCONFIGDIR    ?= $(LIBDIR)/pkgconfig
 
 PKG_CONFIG      ?= pkg-config
 WAYLAND_SCANNER ?= wayland-scanner
