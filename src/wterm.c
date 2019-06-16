@@ -588,7 +588,6 @@ static int iofd = 1;
 static char **opt_cmd = NULL;
 static char *opt_io = NULL;
 static char *opt_title = NULL;
-static char *opt_embed = NULL;
 static char *opt_class = NULL;
 static char *opt_font = NULL;
 static char *opt_line = NULL;
@@ -997,9 +996,9 @@ char *getsel(void) {
      * Copy and pasting of line endings is inconsistent
      * in the inconsistent terminal and GUI world.
      * The best solution seems like to produce '\n' when
-     * something is copied from st and convert '\n' to
+     * something is copied from wterm and convert '\n' to
      * '\r', when something to be pasted is received by
-     * st.
+     * wterm.
      * FIXME: Fix the computer world.
      */
     if ((y < sel.ne.y || lastx >= linelen) && !(last->mode & ATTR_WRAP))
@@ -2551,7 +2550,7 @@ void tputc(Rune u) {
     } else {
       /*
        * Here is a bug in terminals. If the user never sends
-       * some code to stop the str or esc command, then st
+       * some code to stop the str or esc command, then wterm
        * will stop responding. But this is better than
        * silently failing with unknown characters. At least
        * then users will report back.
@@ -2850,7 +2849,7 @@ void wlloadfonts(char *fontstr, double fontsize) {
   }
 
   if (!pattern)
-    die("st: can't open font %s\n", fontstr);
+    die("%s: can't open font %s\n", argv0, fontstr);
 
   if (fontsize > 1) {
     FcPatternDel(pattern, FC_PIXEL_SIZE);
@@ -2879,7 +2878,7 @@ void wlloadfonts(char *fontstr, double fontsize) {
   FcDefaultSubstitute(pattern);
 
   if (wlloadfont(&dc.font, pattern))
-    die("st: can't open font %s\n", fontstr);
+    die("%s: can't open font %s\n", argv0, fontstr);
 
   if (usedfontsize < 0) {
     FcPatternGetDouble(dc.font.pattern, FC_PIXEL_SIZE, 0, &fontval);
@@ -2895,17 +2894,17 @@ void wlloadfonts(char *fontstr, double fontsize) {
   FcPatternDel(pattern, FC_SLANT);
   FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC);
   if (wlloadfont(&dc.ifont, pattern))
-    die("st: can't open font %s\n", fontstr);
+    die("%s: can't open font %s\n", argv0, fontstr);
 
   FcPatternDel(pattern, FC_WEIGHT);
   FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
   if (wlloadfont(&dc.ibfont, pattern))
-    die("st: can't open font %s\n", fontstr);
+    die("%s: can't open font %s\n", argv0, fontstr);
 
   FcPatternDel(pattern, FC_SLANT);
   FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ROMAN);
   if (wlloadfont(&dc.bfont, pattern))
-    die("st: can't open font %s\n", fontstr);
+    die("%s: can't open font %s\n", argv0, fontstr);
 
   FcPatternDestroy(pattern);
 }
@@ -3344,7 +3343,7 @@ void wlsettitle(char *title) {
     wl_shell_surface_set_title(wl.shellsurf, title);
 }
 
-void wlresettitle(void) { wlsettitle(opt_title ? opt_title : "st"); }
+void wlresettitle(void) { wlsettitle(opt_title ? opt_title : "wterm"); }
 
 void redraw(void) { tfulldirt(); }
 
@@ -4006,12 +4005,12 @@ void run(void) {
 }
 
 void usage(void) {
-  die("%s " VERSION " (c) 2010-2015 st engineers\n"
-      "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-      "          [-i] [-t title] [-T title] [-w windowid] [-e command ...]"
+  die("%1$s " VERSION " (c) 2010-2015 st engineers, 2015-2019 wterm engineers\n"
+      "usage: %1$s [-a] [-v] [-c class] [-f font] [-o file]\n"
+      "          [-t title] [-T title] [-e command ...]"
       " [command ...]\n"
-      "       st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-      "          [-i] [-t title] [-T title] [-w windowid] [-l line]"
+      "       %1$s [-a] [-v] [-c class] [-f font] [-o file]\n"
+      "          [-t title] [-T title] [-l line]"
       " [stty_args ...]\n",
       argv0);
 }
@@ -4040,9 +4039,6 @@ int main(int argc, char *argv[]) {
   case 't':
   case 'T':
     opt_title = EARGF(usage());
-    break;
-  case 'w':
-    opt_embed = EARGF(usage());
     break;
   case 'v':
   default:

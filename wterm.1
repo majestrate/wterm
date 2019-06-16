@@ -1,16 +1,13 @@
-.TH ST 1 st\-VERSION
+.TH ST 1 wterm\-VERSION
 .SH NAME
-st \- simple terminal
+wterm \- simple terminal
 .SH SYNOPSIS
-.B st
+.B wterm
 .RB [ \-a ]
 .RB [ \-c
 .IR class ]
 .RB [ \-f
 .IR font ]
-.RB [ \-g
-.IR geometry ]
-.RB [ \-i ]
 .RB [ \-o
 .IR file ]
 .RB [ \-t 
@@ -19,22 +16,17 @@ st \- simple terminal
 .IR title ]
 .RB [ \-l
 .IR line ]
-.RB [ \-w 
-.IR windowid ]
 .RB [ \-v ]
 .RB [ \-e
 .IR command ...]
 .RI [ commands ...]
 .PP
-.B st
+.B wterm
 .RB [ \-a ]
 .RB [ \-c
 .IR class ]
 .RB [ \-f
 .IR font ]
-.RB [ \-g
-.IR geometry ]
-.RB [ \-i ]
 .RB [ \-o
 .IR file ]
 .RB [ \-t
@@ -43,14 +35,12 @@ st \- simple terminal
 .IR title ]
 .RB [ \-l
 .IR line ]
-.RB [ \-w
-.IR windowid ]
 .RB [ \-v ]
 .RB [ \-l
 .IR line ]
 .RI [ stty_args ...]
 .SH DESCRIPTION
-.B st
+.B wterm
 is a simple terminal emulator.
 .SH OPTIONS
 .TP
@@ -63,32 +53,19 @@ defines the window class (default $TERM).
 .BI \-f " font"
 defines the
 .I font
-to use when st is run.
-.TP
-.BI \-g " geometry"
-defines the X11 geometry string.
-The form is [=][<cols>{xX}<rows>][{+-}<xoffset>{+-}<yoffset>]. See
-.BR XParseGeometry (3)
-for further details.
-.TP
-.B \-i
-will fixate the position given with the -g option.
+to use when wterm is run.
 .TP
 .BI \-o " iofile"
 writes all the I/O to
 .I iofile.
-This feature is useful when recording st sessions. A value of "-" means
+This feature is useful when recording wterm sessions. A value of "-" means
 standard output.
 .TP
 .BI \-t " title"
-defines the window title (default 'st').
+defines the window title (default 'wterm').
 .TP
 .BI \-T " title"
-defines the window title (default 'st').
-.TP
-.BI \-w " windowid"
-embeds st within the window identified by 
-.I windowid
+defines the window title (default 'wterm').
 .TP
 .BI \-l " line"
 use a tty line instead of a pseudo terminal.
@@ -99,7 +76,7 @@ remaining arguments are used as flags for stty.
 prints version information to stderr, then exits.
 .TP
 .BI \-e " program " [ " arguments " "... ]"
-st executes
+wterm executes
 .I program
 instead of the shell.  If this is used it
 .B must be the last option
@@ -110,7 +87,7 @@ even without it.
 .SH SHORTCUTS
 .TP
 .B Ctrl-Print Screen
-Toggle if st should print to the
+Toggle if wterm should print to the
 .I iofile.
 .TP
 .B Shift-Print Screen
@@ -142,7 +119,7 @@ Copy the selected text to the clipboard selection.
 .B Alt-Shift-v
 Paste from the clipboard selection.
 .SH CUSTOMIZATION
-.B st
+.B wterm
 can be customized by creating a custom config.h and (re)compiling the source
 code. This keeps it fast, secure and simple.
 .SH AUTHORS
