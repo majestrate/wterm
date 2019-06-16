@@ -6,27 +6,21 @@ WLDSRC=$(SRC)/wld
 
 PKGS = fontconfig wayland-client wayland-cursor xkbcommon pixman-1 libdrm
 
-WTERM_SOURCES = $(wildcard $(WLDSRC)/*.c)
 WTERM_SOURCES += $(wildcard $(SRC)/*.c)
-WTERM_HEADERS = $(wildcard $(WLDSRC)/*.h)
 WTERM_HEADERS += $(wildcard $(SRC)/*.h)
 
 ifeq ($(ENABLE_INTEL),1)
 PKGS += libdrm_intel
-WTERM_SOURCES += $(wildcard $(WLDSRC)/intel/*.c)
-WTERM_HEADERS += $(wildcard $(WLDSRC)/intel/*.h)
 CFLAGS += -DWITH_INTEL_DRM
 endif
 ifeq ($(ENABLE_NOUVEAU),1)
 PKGS += libdrm_nouveau
-WTERM_SOURCES += $(wildcard $(WLDSRC)/nouveau/*.c)
-WTERM_HEADERS += $(wildcard $(WLDSRC)/nouveau/*.h)
 CFLAGS += -DWITH_NOUVEAU_DRM
 endif
 
 CFLAGS += -std=gnu99 -Wall -g -DWITH_WAYLAND_DRM -DWITH_WAYLAND_SHM
 CFLAGS += $(shell pkg-config --cflags $(PKGS)) -I include
-LDFLAGS = $(shell pkg-config --libs $(PKGS)) -lm -lutil
+LDFLAGS = $(shell pkg-config --libs $(PKGS)) -lm -lutil -L src/wld -lwld
 
 WAYLAND_HEADERS = $(wildcard include/*.xml)
 
@@ -39,7 +33,7 @@ OBJECTS = $(SOURCES:.c=.o)
 BIN_PREFIX = $(PREFIX)
 SHARE_PREFIX = $(PREFIX)
 
-all: wterm
+all: wld wterm
 
 include/config.h:
 	cp config.def.h include/config.h
@@ -55,8 +49,12 @@ $(OBJECTS): $(HDRS) include/config.h
 wterm: $(OBJECTS)
 	$(CC) -o wterm $(OBJECTS) $(LDFLAGS)
 
+wld:
+	make -C src/wld
+
 clean:
 	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) include/config.h wterm
+	make -C src/wld clean
 
 install-icons:
 	mkdir -p $(SHARE_PREFIX)/share/icons/hicolor/scalable/apps/
