@@ -14,7 +14,7 @@ static int borderpx = 2;
 static uint8_t term_alpha = 0xaa;
 
 /*
- * What program is execed by st depends of these precedence rules:
+ * What program is execed by wterm depends of these precedence rules:
  * 1: program passed with -e
  * 2: utmp option
  * 3: SHELL environment variable
@@ -153,7 +153,7 @@ static Shortcut shortcuts[] = {
 };
 
 /*
- * Special keys (change & recompile st.info accordingly)
+ * Special keys (change & recompile wterm.info accordingly)
  *
  * Mask value:
  * * Use MOD_MASK_ANY to match the key no matter modifiers state
@@ -172,7 +172,7 @@ static Shortcut shortcuts[] = {
  * * > 0: crlf mode is enabled
  * * < 0: crlf mode is disabled
  *
- * Be careful with the order of the definitions because st searches in
+ * Be careful with the order of the definitions because wterm searches in
  * this table sequentially, so any MOD_MASK_ANY must be in the last
  * position for a key.
  */
