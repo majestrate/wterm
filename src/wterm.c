@@ -3458,8 +3458,8 @@ void regglobal(void *data, struct wl_registry *registry, uint32_t name,
 
   if (strcmp(interface, "wl_compositor") == 0) {
     wl.cmp = wl_registry_bind(registry, name, &wl_compositor_interface, 3);
-  } else if (strcmp(interface, "xdg_wm_base") == 0) {
-    // printf("init wm_base\n");
+  } else if (strcmp(interface, "xdg_wm_base") == 0 || strcmp(interface, "zxdg_shell_v6") == 0) {
+    // printf("init xdg_wm_base\n");
     wl.xdgshell =
         wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
     xdg_wm_base_add_listener(wl.xdgshell, &base_listener, NULL);
