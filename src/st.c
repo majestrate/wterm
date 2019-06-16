@@ -588,7 +588,6 @@ static int iofd = 1;
 static char **opt_cmd = NULL;
 static char *opt_io = NULL;
 static char *opt_title = NULL;
-static char *opt_embed = NULL;
 static char *opt_class = NULL;
 static char *opt_font = NULL;
 static char *opt_line = NULL;
@@ -4007,11 +4006,11 @@ void run(void) {
 
 void usage(void) {
   die("%s " VERSION " (c) 2010-2015 st engineers\n"
-      "usage: st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-      "          [-i] [-t title] [-T title] [-w windowid] [-e command ...]"
+      "usage: st [-a] [-v] [-c class] [-f font] [-o file]\n"
+      "          [-t title] [-T title] [-e command ...]"
       " [command ...]\n"
-      "       st [-a] [-v] [-c class] [-f font] [-g geometry] [-o file]\n"
-      "          [-i] [-t title] [-T title] [-w windowid] [-l line]"
+      "       st [-a] [-v] [-c class] [-f font] [-o file]\n"
+      "          [-t title] [-T title] [-l line]"
       " [stty_args ...]\n",
       argv0);
 }
@@ -4040,9 +4039,6 @@ int main(int argc, char *argv[]) {
   case 't':
   case 'T':
     opt_title = EARGF(usage());
-    break;
-  case 'w':
-    opt_embed = EARGF(usage());
     break;
   case 'v':
   default:
