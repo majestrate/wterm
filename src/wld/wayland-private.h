@@ -1,4 +1,4 @@
-/* wld: intel/mi.h
+/* wld: wayland-private.h
  *
  * Copyright (c) 2013, 2014 Michael Forney
  *
@@ -21,30 +21,40 @@
  * SOFTWARE.
  */
 
-#ifndef WLD_INTEL_MI_H
-#define WLD_INTEL_MI_H
+#ifndef WLD_WAYLAND_PRIVATE_H
+#define WLD_WAYLAND_PRIVATE_H
 
-#define INTEL_CLIENT_MI 0x0
+#include "wld.h"
 
-#define MI_OP(opcode) (                                                     \
-      INTEL_CLIENT_MI << 29 /* 31:29 */                                     \
-    | opcode << 23          /* 28:23 */                                     \
-)
+struct buffer;
+struct wl_display;
+struct wl_event_queue;
+struct wl_buffer;
 
-#define MI_NOOP                 MI_OP(0x00)
-#define MI_FLUSH                MI_OP(0x04)
-#define MI_BATCH_BUFFER_END     MI_OP(0x0A)
+struct wayland_context
+{
+    struct wld_context base;
+    const struct wayland_impl * impl;
+    struct wl_display * display;
+    struct wl_event_queue * queue;
+};
 
-/* MI_NOOP */
-#define MI_NOOP_IDENTIFICATION_NUMBER(number)       (1 << 22 | number)
+struct wayland_impl
+{
+    struct wayland_context * (* create_context)(struct wl_display * display,
+                                                struct wl_event_queue * queue);
+    bool (* has_format)(struct wld_context * context, uint32_t format);
+};
 
-/* MI_FLUSH */
-#define MI_FLUSH_ENABLE_PROTECTED_MEMORY            (1 << 6)
-#define MI_FLUSH_DISABLE_INDIRECT_STATE_POINTERS    (1 << 5)
-#define MI_FLUSH_CLEAR_GENERIC_MEDIA_STATE          (1 << 4)
-#define MI_FLUSH_RESET_GLOBAL_SNAPSHOT_COUNT        (1 << 3)
-#define MI_FLUSH_INHIBIT_RENDER_CACHE_FLUSH         (1 << 2)
-#define MI_FLUSH_INVALIDATE_STATE_INSTRUCTION_CACHE (1 << 1)
+#if WITH_WAYLAND_DRM
+extern const struct wayland_impl drm_wayland_impl;
+#endif
+
+#if WITH_WAYLAND_SHM
+extern const struct wayland_impl shm_wayland_impl;
+#endif
+
+bool wayland_buffer_add_exporter(struct buffer * buffer, struct wl_buffer * wl);
 
 #endif
 

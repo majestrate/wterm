@@ -21,71 +21,87 @@
  * SOFTWARE.
  */
 
-#include "wld/drm.h"
-#include "wld/drm-private.h"
+#include "drm.h"
+#include "drm-private.h"
 
 #include <sys/sysmacros.h>
 
-const static struct drm_driver *drivers[] = {
+const static struct drm_driver * drivers[] = {
 #if WITH_DRM_INTEL
     &intel_drm_driver,
 #endif
 #if WITH_DRM_NOUVEAU
     &nouveau_drm_driver,
 #endif
-    &dumb_drm_driver};
+    &dumb_drm_driver
+};
 
-static const struct drm_driver *find_driver(int fd) {
-  char path[64], id[32];
-  uint32_t vendor_id, device_id;
-  char *path_part;
-  struct stat st;
-  FILE *file;
-  uint32_t index;
+static const struct drm_driver * find_driver(int fd)
+{
+    char path[64], id[32];
+    uint32_t vendor_id, device_id;
+    char * path_part;
+    struct stat st;
+    FILE * file;
+    uint32_t index;
+    int n;
 
-  if (fstat(fd, &st) == -1)
+    if (fstat(fd, &st) == -1)
+        return NULL;
+
+    if (getenv("WLD_DRM_DUMB"))
+        goto dumb;
+
+    n = snprintf(path, sizeof(path), "/sys/dev/char/%u:%u/device/", major(st.st_rdev), minor(st.st_rdev));
+    if (n + 6 >= sizeof(path))
+        return NULL;
+    path_part = path + n;
+
+    strcpy(path_part, "vendor");
+    file = fopen(path, "r");
+    if (!file)
+        goto dumb;
+    fgets(id, sizeof id, file);
+    fclose(file);
+    vendor_id = strtoul(id, NULL, 0);
+
+    strcpy(path_part, "device");
+    file = fopen(path, "r");
+    if (!file)
+        goto dumb;
+    fgets(id, sizeof id, file);
+    fclose(file);
+    device_id = strtoul(id, NULL, 0);
+
+    for (index = 0; index < ARRAY_LENGTH(drivers); ++index)
+    {
+        DEBUG("Trying DRM driver `%s'\n", drivers[index]->name);
+        if (drivers[index]->device_supported(vendor_id, device_id))
+            return drivers[index];
+    }
+
+    DEBUG("No DRM driver supports device 0x%x:0x%x\n", vendor_id, device_id);
+
     return NULL;
 
-  path_part = path + snprintf(path, sizeof path, "/sys/dev/char/%u:%u/device/",
-                              major(st.st_rdev), minor(st.st_rdev));
-
-  strcpy(path_part, "vendor");
-  file = fopen(path, "r");
-  fgets(id, sizeof id, file);
-  fclose(file);
-  vendor_id = strtoul(id, NULL, 0);
-
-  strcpy(path_part, "device");
-  file = fopen(path, "r");
-  fgets(id, sizeof id, file);
-  fclose(file);
-  device_id = strtoul(id, NULL, 0);
-
-  if (getenv("WLD_DRM_DUMB"))
+dumb:
     return &dumb_drm_driver;
-
-  for (index = 0; index < ARRAY_LENGTH(drivers); ++index) {
-    DEBUG("Trying DRM driver `%s'\n", drivers[index]->name);
-    if (drivers[index]->device_supported(vendor_id, device_id))
-      return drivers[index];
-  }
-
-  DEBUG("No DRM driver supports device 0x%x:0x%x\n", vendor_id, device_id);
-
-  return NULL;
 }
 
 EXPORT
-struct wld_context *wld_drm_create_context(int fd) {
-  const struct drm_driver *driver;
+struct wld_context * wld_drm_create_context(int fd)
+{
+    const struct drm_driver * driver;
 
-  if (!(driver = find_driver(fd)))
-    return NULL;
+    if (!(driver = find_driver(fd)))
+        return NULL;
 
-  return driver->create_context(fd);
+    return driver->create_context(fd);
 }
 
 EXPORT
-bool wld_drm_is_dumb(struct wld_context *context) {
-  return context->impl == dumb_context_impl;
+bool wld_drm_is_dumb(struct wld_context * context)
+{
+    return context->impl == dumb_context_impl;
 }
+
