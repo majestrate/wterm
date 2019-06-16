@@ -250,7 +250,7 @@ typedef struct {
   struct wl_data_offer *seloffer;
   struct wl_surface *surface;
   struct wl_buffer *buffer;
-  struct wm_base *xdgshell;
+  struct xdg_wm_base *xdgshell;
   struct wl_shell *shell;
   struct wl_shell_surface *shellsurf;
   struct xdg_surface *xdgsurface;
@@ -491,14 +491,8 @@ static void ptrbutton(void *, struct wl_pointer *, uint32_t, uint32_t, uint32_t,
 static void ptraxis(void *, struct wl_pointer *, uint32_t, uint32_t,
                     wl_fixed_t);
 
-static void shellsurfping(void *, struct wl_shell_surface *, uint32_t);
-static void shellsurfconfigure(void *, struct wl_shell_surface *, uint32_t,
-                               int32_t, int32_t);
-static void shellsurfpopupdone(void *, struct wl_shell_surface *);
-
-static void xdgshellping(void *, struct wm_base *, uint32_t);
+static void xdgshellping(void *, struct xdg_wm_base *, uint32_t);
 static void xdgsurfconfigure(void *, struct xdg_surface *, uint32_t);
-static void xdgsurfclose(void *, struct xdg_surface *);
 static void xdgtopconfigure(void *, struct xdg_toplevel *, int32_t, int32_t,
                             struct wl_array *);
 static void xdgtopclose(void *, struct xdg_toplevel *);
@@ -549,15 +543,13 @@ static struct wl_keyboard_listener kbdlistener = {
     kbdkeymap, kbdenter, kbdleave, kbdkey, kbdmodifiers, kbdrepeatinfo};
 static struct wl_pointer_listener ptrlistener = {ptrenter, ptrleave, ptrmotion,
                                                  ptrbutton, ptraxis};
-static struct xdg_surface_listener surf_listener = {xdgsurfconfigure};
 static struct xdg_wm_base_listener base_listener = {xdgshellping};
-static struct wl_shell_surface_listener shellsurf_listener = {
-    shellsurfping, shellsurfconfigure, shellsurfpopupdone};
-static struct xdg_toplevel_listener xdgtoplevellistener = {xdgtopconfigure,
-                                                               xdgtopclose};
 static struct wl_data_device_listener datadevlistener = {
     datadevoffer,  datadeventer, datadevleave,
     datadevmotion, datadevdrop,  datadevselection};
+static struct xdg_surface_listener xdgsurflistener = {xdgsurfconfigure};
+static struct xdg_toplevel_listener xdgtoplevellistener = {xdgtopconfigure,
+                                                           xdgtopclose};
 static struct wl_data_offer_listener dataofferlistener = {dataofferoffer};
 static struct wl_data_source_listener datasrclistener = {
     datasrctarget, datasrcsend, datasrccancelled};
@@ -3002,8 +2994,9 @@ void wlinit(void) {
   if (wl.xdgshell) {
     wl.xdgsurface = xdg_wm_base_get_xdg_surface(wl.xdgshell, wl.surface);
     if (wl.xdgsurface) {
-      xdg_wm_base_add_listener(wl.xdgshell, &base_listener, NULL);
-      xdg_surface_add_listener(wl.xdgsurface, &surflistener, NULL);
+      xdg_surface_add_listener(wl.xdgsurface, &xdgsurflistener, NULL);
+      wl.xdgtoplevel = xdg_surface_get_toplevel(wl.xdgsurface);
+      xdg_toplevel_add_listener(wl.xdgtoplevel, &xdgtoplevellistener, NULL);
     } else
       die("failed to get xdgsurface");
   } else
@@ -3319,9 +3312,7 @@ void wldrawcursor(void) {
 }
 
 void wlsettitle(char *title) {
-  if (wl.xdgsurface)
-    xdg_toplevel_set_title(xdg_surface_get_toplevel(wl.xdgsurface), title);
-  else if (wl.xdgtoplevel)
+  if (wl.xdgtoplevel)
     xdg_toplevel_set_title(wl.xdgtoplevel, title);
   else if (wl.shellsurf)
     wl_shell_surface_set_title(wl.shellsurf, title);
@@ -3784,21 +3775,7 @@ void ptraxis(void *data, struct wl_pointer *pointer, uint32_t time,
   }
 }
 
-void shellsurfping(void *user, struct wl_shell_surface *surface,
-                   uint32_t serial) {
-  wl_shell_surface_pong(surface, serial);
-  if (getenv("WTERM_DEBUG"))
-    printf("shellsurf ping serial=%d\n", serial);
-}
-void shellsurfconfigure(void *user, struct wl_shell_surface *surface,
-                        uint32_t edges, int32_t w, int32_t h) {
-  if (getenv("WTERM_DEBUG"))
-    printf("shell surface configured\n");
-}
-
-void shellsurfpopupdone(void *user, struct wl_shell_surface *surface) {}
-
-void xdgshellping(void *data, struct wm_base *shell, uint32_t serial) {
+void xdgshellping(void *data, struct xdg_wm_base *shell, uint32_t serial) {
   xdg_wm_base_pong(shell, serial);
 }
 
@@ -3822,10 +3799,6 @@ static void close_shell_and_exit() {
 }
 
 void xdgtopclose(void *data, struct xdg_toplevel *top) {
-  close_shell_and_exit();
-}
-
-void xdgsurfclose(void *data, struct xdg_surface *surf) {
   close_shell_and_exit();
 }
 

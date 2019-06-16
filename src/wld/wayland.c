@@ -58,14 +58,7 @@ static const struct buffer_socket_impl buffer_socket_impl = {
 
 IMPL(wayland_buffer_socket, buffer_socket)
 
-static void sync_done(void * data, struct wl_callback * callback,
-                      uint32_t msecs);
-
-static const struct wl_callback_listener sync_listener = {
-    .done = &sync_done
-};
-
-static void buffer_release(void * data, struct wl_buffer * buffer);
+static void buffer_release(void *data, struct wl_buffer *buffer);
 
 const static struct wayland_impl * impls[] = {
 #if WITH_WAYLAND_DRM
