@@ -20,7 +20,7 @@ endif
 
 CFLAGS += -std=gnu99 -Wall -g -DWITH_WAYLAND_DRM -DWITH_WAYLAND_SHM
 CFLAGS += $(shell pkg-config --cflags $(PKGS)) -I include
-LDFLAGS = $(shell pkg-config --libs $(PKGS)) -lm -lutil -L src/wld -lwld
+LDFLAGS =src/wld/libwld.a $(shell pkg-config --libs $(PKGS)) -lm -lutil
 
 WAYLAND_HEADERS = $(wildcard include/*.xml)
 
