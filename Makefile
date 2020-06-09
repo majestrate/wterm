@@ -50,11 +50,11 @@ wterm: $(OBJECTS)
 	$(CC) -o wterm $(OBJECTS) $(LDFLAGS)
 
 wld:
-	make -C src/wld
+	$(MAKE) -C src/wld
 
 clean:
 	rm -f $(OBJECTS) $(HDRS) $(WAYLAND_SRC) include/config.h wterm
-	make -C src/wld clean
+	$(MAKE) -C src/wld clean
 
 install-icons:
 	mkdir -p $(SHARE_PREFIX)/share/icons/hicolor/scalable/apps/
