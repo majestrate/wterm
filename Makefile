@@ -4,7 +4,7 @@ include config.mk
 SRC=src
 WLDSRC=$(SRC)/wld
 
-PKGS = fontconfig wayland-client wayland-cursor xkbcommon pixman-1 libdrm
+PKGS = fontconfig wayland-client wayland-cursor xkbcommon pixman-1 libdrm freetype2
 
 WTERM_SOURCES += $(wildcard $(SRC)/*.c)
 WTERM_HEADERS += $(wildcard $(SRC)/*.h)
